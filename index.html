@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.1.9/p5.min.js"></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      let spaceship;
+      let planets = [];
+      let shots = [];
+      let circles = [];
+      let confettis = [];
+      let score = 0;
+
+  function setup() {
+    createCanvas(windowWidth-20, windowHeight-20);
+    spaceship = new Spaceship();
+    for (let i = 0; i < 10; i++) {
+      planets.push(new Planet());
+    }
+    for (let i = 0; i < 100; i++) {
+      circles.push(new Circle());
+    }
+  }
+
+  function draw() {
+    background(0);
+    spaceship.update();
+    spaceship.show();
+    for (let planet of planets) {
+      planet.update();
+      planet.show();
+    }
+    for (let shot of shots) {
+      shot.update();
+      shot.show();
+    }
+    for (let circle of circles) {
+      circle.show();
+    }
+    for (let confetti of confettis) {
+      confetti.update();
+      confetti.show();
+    }
+
+    fill(255);
+    textSize(20);
+    text(`Score: ${score}`, 20, 30);
+  }
+
+  function mousePressed() {
+    let shot = new Shot(spaceship.x, spaceship.y, spaceship.dir);
+    shots.push(shot);
+  }
+
+  class Spaceship {
+    constructor() {
+      this.x = random(width);
+      this.y = random(height);
+      this.dir = random(TWO_PI);
+      this.vel = random(1, 3);
+      this.delay = random(10);
+    }
+
+    update() {
+      // rotate towards mouse pointer
+      let diff = atan2(mouseY - this.y, mouseX - this.x) - this.dir;
+      diff = (diff + TWO_PI) % TWO_PI;
+      if (diff > PI) diff -= TWO_PI;
+      this.dir += diff / this.delay;
+
+      // temporarily stop rotation when near mouse pointer
+      let d = dist(this.x, this.y, mouseX, mouseY);
+      if (d < 30) this.dir = atan2(mouseY - this.y, mouseX - this.x);
+
+      // update position
+      this.x += cos(this.dir) * this.vel;
+      this.y += sin(this.dir) * this.vel;
+
+      // wrap around screen
+      if (this.x < 0) this.x = width;
+      if (this.x > width) this.x = 0;
+      if (this.y < 0) this.y = height;
+      if (this.y > height) this.y = 0;
+
+      // check for collision with confetti
+      for (let i = confettis.length - 1; i >= 0; i--) {
+let confetti = confettis[i];
+let d = dist(this.x, this.y, confetti.x, confetti.y);
+if (d < 20) {
+confettis.splice(i, 1);
+score++;
+}
+}
+}
+
+
+    show() {
+      push();
+      translate(this.x, this.y);
+      rotate(this.dir + PI / 6); // rotate 30 degrees anticlockwise
+      textSize(20);
+      text('🚀', 0, 0);
+      pop();
+    }
+  }
+
+  class Planet {
+    constructor() {
+      this.x = random(width);
+      this.y = random(height);
+      this.dir = random(TWO_PI);
+      this.vel = random(1, 3);
+      this.emoji = random(['🌍', '🌑', '🪐', '🛸']); // possible emojis
+    }
+
+    update() {
+      this.x += cos(this.dir) * this.vel;
+      this.y += sin(this.dir) * this.vel;
+
+      // wrap around screen
+      if (this.x < 0) this.x = width;
+      if (this.x > width) this.x = 0;
+      if (this.y < 0) this.y = height;
+      if (this.y > height) this.y = 0;
+
+      // check for collision with shots
+      for (let i = shots.length - 1; i >= 0; i--) {
+        let shot = shots[i];
+        let d = dist(this.x, this.y, shot.x, shot.y);
+        if (d < 20) {
+          shots.splice(i, 1);
+          this.destroy();
+        }
+      }
+    }
+
+    show() {
+      push();
+      translate(this.x, this.y);
+      textSize(20);
+      text(this.emoji, 0, 0);
+      pop();
+    }
+
+    destroy() {
+      // create confetti explosion
+      for (let i = 0; i < 100; i++) {
+        let confetti = new Confetti(this.x, this.y);
+        confettis.push(confetti);
+      }
+      // replace planet with new one after some time
+      setTimeout(() => {
+        let index = planets.indexOf(this);
+        planets[index] = new Planet();
+      }, 1);
+    }
+  }
+
+  class Circle {
+    constructor() {
+      this.x = random(width);
+      this.y = random(height);
+    }
+
+    show() {
+      ellipse(this.x, this.y, 2, 2);
+    }
+  }
+
+  class Shot {
+    constructor(x, y, dir) {
+      this.x = x;
+      this.y = y;
+      this.dir = dir;
+      this.vel = 5;
+    }
+
+    update() {
+      this.x += cos(this.dir) * this.vel;
+      this.y += sin(this.dir) * this.vel;
+
+      // remove
+
+ 
+if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) {
+let index = shots.indexOf(this);
+shots.splice(index, 1);
+}
+}
+
+
+    show() {
+      push();
+      translate(this.x, this.y);
+      rotate(this.dir + PI / 6); // rotate 30 degrees anticlockwise
+      textSize(15);
+      text('🚀', 0, 0);
+      pop();
+    }
+  }
+
+  class Confetti {
+    constructor(x, y) {
+      this.x = x;
+      this.y = y;
+      this.dir = random(TWO_PI);
+      this.vel = random(1, 5);
+      this.time = 0;
+    }
+
+    update() {
+      this.x += cos(this.dir) * this.vel;
+      this.y += sin(this.dir) * this.vel;
+      this.time++;
+
+      // remove confetti after some time
+      if (this.time > 100) {
+        let index = confettis.indexOf(this);
+        confettis.splice(index, 1);
+      }
+    }
+
+    show() {
+      fill(255);
+      ellipse(this.x, this.y, 2, 2);
+    }
+  }
+</script>
+  </body>
+</html>
