@@ -21,10 +21,10 @@
   function setup() {
     createCanvas(windowWidth-20, windowHeight-20);
     spaceship = new Spaceship();
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 20; i++) {
       planets.push(new Planet());
     }
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 160; i++) {
       circles.push(new Circle());
     }
   }
@@ -105,7 +105,7 @@ score++;
       push();
       translate(this.x, this.y);
       rotate(this.dir + PI / 6); // rotate 30 degrees anticlockwise
-      textSize(20);
+      textSize(60);
       text('🚀', 0, 0);
       pop();
     }
@@ -134,7 +134,7 @@ score++;
       for (let i = shots.length - 1; i >= 0; i--) {
         let shot = shots[i];
         let d = dist(this.x, this.y, shot.x, shot.y);
-        if (d < 20) {
+        if (d < 60) {
           shots.splice(i, 1);
           this.destroy();
         }
@@ -144,7 +144,7 @@ score++;
     show() {
       push();
       translate(this.x, this.y);
-      textSize(20);
+      textSize(70);
       text(this.emoji, 0, 0);
       pop();
     }
@@ -229,7 +229,7 @@ shots.splice(index, 1);
 
     show() {
       fill(255);
-      ellipse(this.x, this.y, 2, 2);
+      ellipse(this.x, this.y, 10, 10);
     }
   }
 </script>
